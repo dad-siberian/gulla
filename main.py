@@ -1,4 +1,5 @@
 import os
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -21,21 +22,44 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
-def get_title_book(book_id):
-    url = f'https://tululu.org/b{book_id}/'
+def get_soup(book_id):
+    url = f'https://tululu.org/b{book_id}'
     response = requests.get(url)
     response.raise_for_status()
-    soup = BeautifulSoup(response.text, 'lxml')
+    check_for_redirect(response)
+    return BeautifulSoup(response.text, 'lxml')
+
+
+def get_title_book(soup):
     title_tag = soup.find('body').find('h1').text.split('::')
     return sanitize_filename(title_tag[0].strip())
     # print(f'Автор: {title_tag[1].strip()}')
 
 
+def get_cover_url(soup):
+    img_url = soup.find('div', class_='bookimage').find('img')['src']
+    return urljoin('https://tululu.org', img_url)
+
+
+def download_image(url, folder='images/'):
+    os.makedirs(folder, exist_ok=True)
+    filename = os.path.basename(url)
+    filepath = os.path.join(folder, filename)
+    response = requests.get(url)
+    response.raise_for_status()
+    check_for_redirect(response)
+    with open(filepath, 'wb') as file:
+        file.write(response.content)
+
+
 def main():
-    for book_id in range(1, 11):
-        book_title = get_title_book(book_id)
+    for book_id in range(1, 10):
         try:
-            download_txt(book_id, book_title)
+            soup = get_soup(book_id) # 1
+            cover_url = get_cover_url(soup)
+            book_title = get_title_book(soup)
+            download_txt(book_id, book_title) # 2
+            download_image(cover_url) # 3
         except requests.HTTPError:
             print('redirect')
 
