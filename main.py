@@ -30,11 +30,13 @@ def get_soup(book_id):
     return BeautifulSoup(response.text, 'lxml')
 
 
-def get_title_book(soup):
+def parse_title_and_author(soup):
     title_tag = soup.find('body').find('h1').text.split('::')
-    # print(f'Название книги: {sanitize_filename(title_tag[0].strip())}')
-    # print(f'Автор: {sanitize_filename(title_tag[1].strip())}')
-    return sanitize_filename(title_tag[0].strip())
+    title = {
+        'title': sanitize_filename(title_tag[0].strip()),
+        'author': sanitize_filename(title_tag[1].strip()),
+    }
+    return title
 
 
 def get_cover_url(soup):
@@ -53,17 +55,24 @@ def download_image(url, folder='images/'):
         file.write(response.content)
 
 
-def download_comments(soup):
+def parse_comments(soup):
     comments = soup.find_all('div', class_='texts')
-    print('Комментарии: ')
-    for comment in comments:
-        print(comment.find('span').text)
+    return [comment.find('span').text for comment in comments]
 
 
-def parse_books_genres(soup):
+def parse_genres(soup):
     genres = soup.find('span', class_='d_book').find_all('a')
-    print(f'Заголовок: {get_title_book(soup)}')
-    print([genre.text for genre in genres])
+    return [genre.text for genre in genres]
+
+
+def parse_book_page(soup):
+    book_page = {
+        'title': parse_title_and_author(soup)['title'],
+        'author': parse_title_and_author(soup)['author'],
+        'genre': parse_genres(soup),
+        'comments': parse_comments(soup),
+    }
+    return book_page
 
 
 def main():
@@ -71,11 +80,10 @@ def main():
         try:
             soup = get_soup(book_id) # 1
             cover_url = get_cover_url(soup)
-            book_title = get_title_book(soup)
-            parse_books_genres(soup)
-            download_comments(soup)
+            book_title = parse_title_and_author(soup)['title']
             download_txt(book_id, book_title) # 2
             download_image(cover_url) # 3
+            parse_book_page(soup)
         except requests.HTTPError:
             print('redirect')
 
