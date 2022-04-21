@@ -60,15 +60,22 @@ def download_comments(soup):
         print(comment.find('span').text)
 
 
+def parse_books_genres(soup):
+    genres = soup.find('span', class_='d_book').find_all('a')
+    print(f'Заголовок: {get_title_book(soup)}')
+    print([genre.text for genre in genres])
+
+
 def main():
     for book_id in range(1, 10):
         try:
             soup = get_soup(book_id) # 1
             cover_url = get_cover_url(soup)
             book_title = get_title_book(soup)
-            # download_comments(soup)
-            # download_txt(book_id, book_title) # 2
-            # download_image(cover_url) # 3
+            parse_books_genres(soup)
+            download_comments(soup)
+            download_txt(book_id, book_title) # 2
+            download_image(cover_url) # 3
         except requests.HTTPError:
             print('redirect')
 
