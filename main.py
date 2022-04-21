@@ -32,8 +32,9 @@ def get_soup(book_id):
 
 def get_title_book(soup):
     title_tag = soup.find('body').find('h1').text.split('::')
+    # print(f'Название книги: {sanitize_filename(title_tag[0].strip())}')
+    # print(f'Автор: {sanitize_filename(title_tag[1].strip())}')
     return sanitize_filename(title_tag[0].strip())
-    # print(f'Автор: {title_tag[1].strip()}')
 
 
 def get_cover_url(soup):
@@ -52,14 +53,22 @@ def download_image(url, folder='images/'):
         file.write(response.content)
 
 
+def download_comments(soup):
+    comments = soup.find_all('div', class_='texts')
+    print('Комментарии: ')
+    for comment in comments:
+        print(comment.find('span').text)
+
+
 def main():
     for book_id in range(1, 10):
         try:
             soup = get_soup(book_id) # 1
             cover_url = get_cover_url(soup)
             book_title = get_title_book(soup)
-            download_txt(book_id, book_title) # 2
-            download_image(cover_url) # 3
+            # download_comments(soup)
+            # download_txt(book_id, book_title) # 2
+            # download_image(cover_url) # 3
         except requests.HTTPError:
             print('redirect')
 
