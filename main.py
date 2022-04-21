@@ -83,18 +83,17 @@ def createParser():
     return parser
 
 
-
 def main():
     parser = createParser()
     namespace = parser.parse_args()
-    for book_id in range(namespace.start_id, namespace.end_id):
+    for book_id in range(namespace.start_id, namespace.end_id + 1):
         try:
             soup = get_soup(book_id)
             cover_url = get_cover_url(soup)
             book_title = parse_title_and_author(soup)['title']
             download_txt(book_id, book_title)
             download_image(cover_url)
-            parse_book_page(soup)
+            print(parse_book_page(soup))
         except requests.HTTPError:
             print('redirect')
 
