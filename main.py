@@ -1,3 +1,4 @@
+import argparse
 import os
 from urllib.parse import urljoin
 
@@ -75,14 +76,24 @@ def parse_book_page(soup):
     return book_page
 
 
+def createParser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('start_id', nargs='?', default=1, type=int)
+    parser.add_argument('end_id', nargs='?', default=10, type=int)
+    return parser
+
+
+
 def main():
-    for book_id in range(1, 10):
+    parser = createParser()
+    namespace = parser.parse_args()
+    for book_id in range(namespace.start_id, namespace.end_id):
         try:
-            soup = get_soup(book_id) # 1
+            soup = get_soup(book_id)
             cover_url = get_cover_url(soup)
             book_title = parse_title_and_author(soup)['title']
-            download_txt(book_id, book_title) # 2
-            download_image(cover_url) # 3
+            download_txt(book_id, book_title)
+            download_image(cover_url)
             parse_book_page(soup)
         except requests.HTTPError:
             print('redirect')
