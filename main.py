@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 
 
-def download_txt(book_id, filename, folder='books/'):
+def download_txt(book_id, filename, folder='books'):
     url = f'http://tululu.org/txt.php?id={book_id}'
     os.makedirs(folder, exist_ok=True)
     filepath = os.path.join(folder, f'{book_id}. {filename}')
@@ -23,8 +23,7 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
-def get_soup(book_id):
-    url = f'https://tululu.org/b{book_id}'
+def get_soup(url):
     response = requests.get(url)
     response.raise_for_status()
     check_for_redirect(response)
@@ -40,12 +39,12 @@ def parse_title_and_author(soup):
     return title
 
 
-def get_cover_url(soup):
+def get_cover_url(soup, base_url):
     img_url = soup.find('div', class_='bookimage').find('img')['src']
-    return urljoin('https://tululu.org', img_url)
+    return urljoin(base_url, img_url)
 
 
-def download_image(url, folder='images/'):
+def download_image(url, folder='images'):
     os.makedirs(folder, exist_ok=True)
     filename = os.path.basename(url)
     filepath = os.path.join(folder, filename)
@@ -87,9 +86,10 @@ def main():
     parser = createParser()
     namespace = parser.parse_args()
     for book_id in range(namespace.start_id, namespace.end_id + 1):
+        base_url =  f'https://tululu.org/b{book_id}'
         try:
-            soup = get_soup(book_id)
-            cover_url = get_cover_url(soup)
+            soup = get_soup(base_url)
+            cover_url = get_cover_url(soup, base_url)
             book_title = parse_title_and_author(soup)['title']
             download_txt(book_id, book_title)
             download_image(cover_url)
