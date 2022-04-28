@@ -8,10 +8,11 @@ from pathvalidate import sanitize_filename
 
 
 def download_txt(book_id, filename, folder='books'):
-    url = f'http://tululu.org/txt.php?id={book_id}'
     os.makedirs(folder, exist_ok=True)
     filepath = os.path.join(folder, f'{book_id}. {filename}')
-    response = requests.get(url)
+    url = f'http://tululu.org/txt.php'
+    params = {'id': book_id}
+    response = requests.get(url, params=params)
     response.raise_for_status()
     check_for_redirect(response)
     with open(f'{filepath}.txt', 'wb') as file:
