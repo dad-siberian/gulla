@@ -1,5 +1,6 @@
 import argparse
 import os
+import time
 from urllib.parse import urljoin
 
 import requests
@@ -88,15 +89,20 @@ def main():
     namespace = parser.parse_args()
     for book_id in range(namespace.start_id, namespace.end_id + 1):
         base_url =  f'https://tululu.org/b{book_id}'
-        try:
-            soup = get_soup(base_url)
-            cover_url = get_cover_url(soup, base_url)
-            book_title = parse_title_and_author(soup)['title']
-            download_txt(book_id, book_title)
-            download_image(cover_url)
-            print(parse_book_page(soup))
-        except requests.HTTPError:
-            print('redirect')
+        while True:
+            try:
+                soup = get_soup(base_url)
+                cover_url = get_cover_url(soup, base_url)
+                book_title = parse_title_and_author(soup)['title']
+                download_txt(book_id, book_title)
+                download_image(cover_url)
+                print(parse_book_page(soup))
+            except requests.HTTPError:
+                print('redirect')
+            except requests.exceptions.ConnectionError:
+                time.sleep(30)
+                continue
+            break
 
 
 if __name__ == '__main__':
