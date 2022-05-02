@@ -2,6 +2,7 @@ import argparse
 import os
 import time
 from urllib.parse import urljoin
+import logging
 
 import requests
 from bs4 import BeautifulSoup
@@ -85,6 +86,12 @@ def createParser():
 
 
 def main():
+    logging.basicConfig(
+        filename='sample.log',
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s %(message)s'
+    )
+    log = logging.getLogger('ex')
     parser = createParser()
     namespace = parser.parse_args()
     for book_id in range(namespace.start_id, namespace.end_id + 1):
@@ -98,7 +105,11 @@ def main():
                 download_image(cover_url)
                 print(parse_book_page(soup))
             except requests.HTTPError:
-                print('redirect')
+                log.exception('redirect to the homepage')
+                print(
+                    f'Запрос перенаправлен на главную страницу. '
+                    f'Возможно, книги с номером {book_id} нет на сайте'
+                )
             except requests.exceptions.ConnectionError:
                 time.sleep(30)
                 continue
