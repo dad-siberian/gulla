@@ -47,9 +47,13 @@ def get_cover_url(soup, base_url):
     return urljoin(base_url, img_url)
 
 
-def download_image(url, folder='images'):
+def download_image(url, book_id, folder='images'):
     os.makedirs(folder, exist_ok=True)
-    filename = os.path.basename(url)
+    basename = os.path.basename(url)
+    if basename == 'nopic.gif':
+        filename = basename
+    else:
+        filename = f'{book_id}_{basename}'
     filepath = os.path.join(folder, filename)
     response = requests.get(url)
     response.raise_for_status()
@@ -102,7 +106,7 @@ def main():
                 cover_url = get_cover_url(soup, base_url)
                 book_title = parse_title_and_author(soup)['title']
                 download_txt(book_id, book_title)
-                download_image(cover_url)
+                download_image(cover_url, book_id)
                 print(parse_book_page(soup))
             except requests.HTTPError:
                 log.exception('redirect to the homepage')
