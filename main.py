@@ -1,8 +1,8 @@
 import argparse
+import logging
 import os
 import time
 from urllib.parse import urljoin
-import logging
 
 import requests
 from bs4 import BeautifulSoup
@@ -99,7 +99,7 @@ def main():
     parser = createParser()
     namespace = parser.parse_args()
     for book_id in range(namespace.start_id, namespace.end_id + 1):
-        base_url =  f'https://tululu.org/b{book_id}'
+        base_url = f'https://tululu.org/b{book_id}'
         while True:
             try:
                 soup = get_soup(base_url)
