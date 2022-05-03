@@ -8,9 +8,18 @@
 
 Для запуска программы требуется Python 3.
 
-- Скачайте код `git clone https://github.com/dad-siberian/gulla.git`
-- Установите зависимости командой `pip install -r requirements.txt`
-- Запустите скрипт командой `python3 main.py start_id end_id`
+- Скачайте код 
+```
+git clone https://github.com/dad-siberian/gulla.git
+```
+- Установите зависимости командой 
+```
+pip install -r requirements.txt
+```
+- Запустите скрипт командой 
+```
+python3 main.py start_id end_id
+```
 
 
 Где `start_id` и `end_id` это начало и конец диапазона скачивания книг. 
