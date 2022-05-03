@@ -66,7 +66,7 @@ def parse_book_page(soup):
     return book_page
 
 
-def createParser():
+def create_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('start_id', nargs='?', default=1, type=int)
     parser.add_argument('end_id', nargs='?', default=10, type=int)
@@ -80,7 +80,7 @@ def main():
         format='%(asctime)s %(levelname)s %(message)s'
     )
     log = logging.getLogger('ex')
-    parser = createParser()
+    parser = create_parser()
     namespace = parser.parse_args()
     for book_id in range(namespace.start_id, namespace.end_id + 1):
         base_url = f'https://tululu.org/b{book_id}'
