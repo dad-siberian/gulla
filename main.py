@@ -91,12 +91,10 @@ def main():
                 book_title = parse_book_page(soup)['title']
                 download_txt(book_id, book_title)
                 download_image(cover_url, book_id)
-                print(parse_book_page(soup))
             except requests.HTTPError:
-                log.exception('redirect to the homepage')
-                print(
-                    f'Запрос перенаправлен на главную страницу. '
-                    f'Возможно, книги с номером {book_id} нет на сайте'
+                log.exception(
+                    f"redirect to the homepage. "
+                    f"Maybe book number {book_id} isn't on the website."
                 )
             except requests.exceptions.ConnectionError:
                 time.sleep(30)
