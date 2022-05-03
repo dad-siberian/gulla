@@ -33,15 +33,6 @@ def get_soup(url):
     return BeautifulSoup(response.text, 'lxml')
 
 
-def parse_title_and_author(soup):
-    title_tag = soup.find('body').find('h1').text.split('::')
-    title = {
-        'title': sanitize_filename(title_tag[0].strip()),
-        'author': sanitize_filename(title_tag[1].strip()),
-    }
-    return title
-
-
 def get_cover_url(soup, base_url):
     img_url = soup.find('div', class_='bookimage').find('img')['src']
     return urljoin(base_url, img_url)
@@ -62,22 +53,15 @@ def download_image(url, book_id, folder='images'):
         file.write(response.content)
 
 
-def parse_comments(soup):
-    comments = soup.find_all('div', class_='texts')
-    return [comment.find('span').text for comment in comments]
-
-
-def parse_genres(soup):
-    genres = soup.find('span', class_='d_book').find_all('a')
-    return [genre.text for genre in genres]
-
-
 def parse_book_page(soup):
+    title_tag = soup.find('body').find('h1').text.split('::')
+    genres = soup.find('span', class_='d_book').find_all('a')
+    comments = soup.find_all('div', class_='texts')
     book_page = {
-        'title': parse_title_and_author(soup)['title'],
-        'author': parse_title_and_author(soup)['author'],
-        'genre': parse_genres(soup),
-        'comments': parse_comments(soup),
+        'title': sanitize_filename(title_tag[0].strip()),
+        'author': sanitize_filename(title_tag[1].strip()),
+        'genre': [genre.text for genre in genres],
+        'comments': [comment.find('span').text for comment in comments],
     }
     return book_page
 
@@ -104,7 +88,7 @@ def main():
             try:
                 soup = get_soup(base_url)
                 cover_url = get_cover_url(soup, base_url)
-                book_title = parse_title_and_author(soup)['title']
+                book_title = parse_book_page(soup)['title']
                 download_txt(book_id, book_title)
                 download_image(cover_url, book_id)
                 print(parse_book_page(soup))
