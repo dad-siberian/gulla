@@ -41,7 +41,7 @@ def download_image(url, book_id, folder='images'):
         file.write(response.content)
 
 
-def parse_book_page(base_url):
+def parse_book_details(base_url):
     response = requests.get(base_url)
     response.raise_for_status()
     check_for_redirect(response)
@@ -50,14 +50,14 @@ def parse_book_page(base_url):
     genres = soup.find('span', class_='d_book').find_all('a')
     img_url = soup.find('div', class_='bookimage').find('img')['src']
     comments = soup.find_all('div', class_='texts')
-    book_page = {
+    book_details = {
         'title': sanitize_filename(title_tag[0].strip()),
         'author': sanitize_filename(title_tag[1].strip()),
         'genre': [genre.text for genre in genres],
         'comments': [comment.find('span').text for comment in comments],
         'img_url': urljoin(base_url, img_url),
     }
-    return book_page
+    return book_details
 
 
 def create_parser():
@@ -80,8 +80,8 @@ def main():
         base_url = f'https://tululu.org/b{book_id}'
         while True:
             try:
-                cover_url = parse_book_page(base_url)['img_url']
-                book_title = parse_book_page(base_url)['title']
+                cover_url = parse_book_details(base_url)['img_url']
+                book_title = parse_book_details(base_url)['title']
                 download_txt(book_id, book_title)
                 download_image(cover_url, book_id)
             except requests.HTTPError:
