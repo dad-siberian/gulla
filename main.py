@@ -22,7 +22,7 @@ def download_txt(book_id, filename, folder='books'):
 
 
 def check_for_redirect(response):
-    if response.url == 'https://tululu.org/':
+    if len(response.history) > 1:
         raise requests.HTTPError
 
 
