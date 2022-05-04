@@ -47,12 +47,13 @@ def parse_book_details(base_url):
     check_for_redirect(response)
     soup = BeautifulSoup(response.text, 'lxml')
     title_tag = soup.find('body').find('h1').text.split('::')
+    title, author = title_tag
     genres = soup.find('span', class_='d_book').find_all('a')
-    img_url = soup.find('div', class_='bookimage').find('img')['src']
+    img_url = soup.find('div', class_='bookimage').find('img').get('src')
     comments = soup.find_all('div', class_='texts')
     book_details = {
-        'title': sanitize_filename(title_tag[0].strip()),
-        'author': sanitize_filename(title_tag[1].strip()),
+        'title': sanitize_filename(title.strip()),
+        'author': sanitize_filename(author.strip()),
         'genre': [genre.text for genre in genres],
         'comments': [comment.find('span').text for comment in comments],
         'img_url': urljoin(base_url, img_url),
@@ -80,8 +81,9 @@ def main():
         base_url = f'https://tululu.org/b{book_id}'
         while True:
             try:
-                cover_url = parse_book_details(base_url)['img_url']
-                book_title = parse_book_details(base_url)['title']
+                book_details = parse_book_details(base_url)
+                cover_url = book_details.get('img_url')
+                book_title = book_details.get('title')
                 download_txt(book_id, book_title)
                 download_image(cover_url, book_id)
             except requests.HTTPError:
