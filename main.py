@@ -92,10 +92,11 @@ def main():
                 download_image(cover_url, book_id)
             except requests.HTTPError:
                 log.exception(
-                    f"redirect to the homepage. "
+                    f"An HTTP error occurred. "
                     f"Maybe book number {book_id} isn't on the website."
                 )
             except requests.exceptions.ConnectionError:
+                log.exception(f"A Connection error occurred")
                 time.sleep(30)
                 continue
             break
