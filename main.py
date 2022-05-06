@@ -12,7 +12,7 @@ from pathvalidate import sanitize_filename
 def download_txt(book_id, filename, folder='books'):
     os.makedirs(folder, exist_ok=True)
     filepath = os.path.join(folder, f'{book_id}. {filename}')
-    url = f'http://tululu.org/txt.php'
+    url = f'https://tululu.org/txt.php'
     params = {'id': book_id}
     response = requests.get(url, params=params)
     response.raise_for_status()
@@ -22,7 +22,7 @@ def download_txt(book_id, filename, folder='books'):
 
 
 def check_for_redirect(response):
-    if len(response.history) > 1:
+    if response.history:
         raise requests.HTTPError
 
 
@@ -78,7 +78,7 @@ def main():
     parser = create_parser()
     namespace = parser.parse_args()
     for book_id in range(namespace.start_id, namespace.end_id + 1):
-        base_url = f'https://tululu.org/b{book_id}'
+        base_url = f'https://tululu.org/b{book_id}/'
         while True:
             try:
                 book_details = parse_book_details(base_url)
