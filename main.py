@@ -41,11 +41,14 @@ def download_image(url, book_id, folder='images'):
         file.write(response.content)
 
 
-def parse_book_details(base_url):
-    response = requests.get(base_url)
+def get_soup(url):
+    response = requests.get(url)
     response.raise_for_status()
     check_for_redirect(response)
-    soup = BeautifulSoup(response.text, 'lxml')
+    return BeautifulSoup(response.text, 'lxml')
+
+
+def parse_book_details(soup, base_url):
     title_tag = soup.find('body').find('h1').text.split('::')
     title, author = title_tag
     genres = soup.find('span', class_='d_book').find_all('a')
@@ -81,7 +84,8 @@ def main():
         base_url = f'https://tululu.org/b{book_id}/'
         while True:
             try:
-                book_details = parse_book_details(base_url)
+                soup = get_soup(base_url)
+                book_details = parse_book_details(soup, base_url)
                 cover_url = book_details.get('img_url')
                 book_title = book_details.get('title')
                 download_txt(book_id, book_title)
