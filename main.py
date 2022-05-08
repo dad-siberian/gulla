@@ -7,6 +7,7 @@ from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
+from tqdm import tqdm
 
 
 def download_txt(book_id, filename, folder='books'):
@@ -80,7 +81,7 @@ def main():
     log = logging.getLogger('ex')
     parser = create_parser()
     namespace = parser.parse_args()
-    for book_id in range(namespace.start_id, namespace.end_id + 1):
+    for book_id in tqdm(range(namespace.start_id, namespace.end_id + 1)):
         base_url = f'https://tululu.org/b{book_id}/'
         while True:
             try:
