@@ -15,9 +15,10 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def download_txt(book_id, filename, folder='books'):
-    os.makedirs(folder, exist_ok=True)
-    filepath = os.path.join(folder, f'{book_id}. {filename}')
+def download_txt(book_id, filename, folder='.'):
+    folder_path = os.path.join(folder, 'books')
+    os.makedirs(folder_path, exist_ok=True)
+    filepath = os.path.join(folder_path, f'{book_id}. {filename}')
     url = f'https://tululu.org/txt.php'
     params = {'id': book_id}
     response = requests.get(url, params=params)
@@ -32,14 +33,15 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
-def download_image(url, book_id, folder='images'):
-    os.makedirs(folder, exist_ok=True)
+def download_image(url, book_id, folder):
+    folder_path = os.path.join(folder, 'images')
+    os.makedirs(folder_path, exist_ok=True)
     basename = os.path.basename(url)
     if basename == 'nopic.gif':
         filename = basename
     else:
         filename = f'{book_id}_{basename}'
-    filepath = os.path.join(folder, filename)
+    filepath = os.path.join(folder_path, filename)
     response = requests.get(url)
     response.raise_for_status()
     check_for_redirect(response)
@@ -70,15 +72,19 @@ def parse_book_details(soup, base_url):
     return book_details
 
 
-def get_book(book_url):
+def get_book(book_url, folder, skip_imgs=False, skip_txt=False):
     book_id_patch = urlparse(book_url).path
     book_id =''.join(item for item in book_id_patch if item.isdecimal())
     soup = get_soup(book_url)
     book_details = parse_book_details(soup, book_url)
     cover_url = book_details.get('img_url')
     book_title = book_details.get('title')
-    download_txt(book_id, book_title)
-    download_image(cover_url, book_id)
+    if not folder:
+        folder = '.'
+    if not skip_imgs:
+        download_txt(book_id, book_title, folder)
+    if not skip_txt:
+        download_image(cover_url, book_id, folder)
     return book_details
 
 
@@ -102,7 +108,7 @@ def main():
         book_url = f'https://tululu.org/b{book_id}/'
         while True:
             try:
-                book = get_book(book_url)
+                book = get_book(book_url, folder='.')
                 books.append(book)
             except requests.HTTPError:
                 logger.exception(
