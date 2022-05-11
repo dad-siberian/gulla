@@ -1,16 +1,13 @@
 import argparse
-import json
 import logging
 import os
 import time
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from tqdm import tqdm
-
-from parse_tululu_category import parse_category
 
 
 def download_txt(book_id, filename, folder='books'):
@@ -30,13 +27,13 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
-def download_image(url, folder='images'):
+def download_image(url, book_id, folder='images'):
     os.makedirs(folder, exist_ok=True)
     basename = os.path.basename(url)
     if basename == 'nopic.gif':
         filename = basename
     else:
-        filename = f'{basename}'
+        filename = f'{book_id}_{basename}'
     filepath = os.path.join(folder, filename)
     response = requests.get(url)
     response.raise_for_status()
@@ -70,14 +67,9 @@ def parse_book_details(soup, base_url):
 
 def create_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('start_page', nargs='?', default=1, type=int)
-    parser.add_argument('end_page', nargs='?', default=5, type=int)
+    parser.add_argument('start_id', nargs='?', default=1, type=int)
+    parser.add_argument('end_id', nargs='?', default=10, type=int)
     return parser
-
-
-def get_book_id(url):
-    book_id = urlparse(url).path
-    return ''.join(item for item in book_id if item.isdecimal())
 
 
 def main():
@@ -89,18 +81,16 @@ def main():
     log = logging.getLogger('ex')
     parser = create_parser()
     namespace = parser.parse_args()
-    
-    book_urls = parse_category(namespace.start_page, namespace.end_page + 1)
-    for book_url in tqdm(book_urls):
-        book_id = get_book_id(book_url)
+    for book_id in tqdm(range(namespace.start_id, namespace.end_id + 1)):
+        base_url = f'https://tululu.org/b{book_id}/'
         while True:
             try:
-                soup = get_soup(book_url)
-                book_details = parse_book_details(soup, book_url)
+                soup = get_soup(base_url)
+                book_details = parse_book_details(soup, base_url)
                 cover_url = book_details.get('img_url')
                 book_title = book_details.get('title')
                 download_txt(book_id, book_title)
-                download_image(cover_url)
+                download_image(cover_url, book_id)
             except requests.HTTPError:
                 log.exception(
                     f"An HTTP error occurred. "
@@ -111,8 +101,6 @@ def main():
                 time.sleep(30)
                 continue
             break
-        with open("books.json", "a", encoding='utf8') as my_file:
-            json.dump(book_details, my_file, ensure_ascii=False)
 
 
 if __name__ == '__main__':
