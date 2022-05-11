@@ -11,7 +11,8 @@ from pathvalidate import sanitize_filename
 from tqdm import tqdm
 
 
-log = logging.getLogger('ex')
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def download_txt(book_id, filename, folder='books'):
@@ -92,7 +93,7 @@ def main():
     logging.basicConfig(
         filename='sample.log',
         level=logging.INFO,
-        format='%(asctime)s %(levelname)s %(message)s'
+        format='%(asctime)s %(name)s %(levelname)s %(message)s'
     )
     parser = create_parser()
     namespace = parser.parse_args()
@@ -104,12 +105,12 @@ def main():
                 book = get_book(book_url)
                 books.append(book)
             except requests.HTTPError:
-                log.exception(
+                logger.exception(
                     f"An HTTP error occurred. "
                     f"Maybe book number {book_id} isn't on the website."
                 )
             except requests.exceptions.ConnectionError:
-                log.exception(f"A Connection error occurred")
+                logger.exception(f"A Connection error occurred")
                 time.sleep(30)
                 continue
             break
