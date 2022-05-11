@@ -1,8 +1,9 @@
 import argparse
+import json
 import logging
 import os
 import time
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -65,6 +66,18 @@ def parse_book_details(soup, base_url):
     return book_details
 
 
+def get_book(book_url):
+    book_id_patch = urlparse(book_url).path
+    book_id =''.join(item for item in book_id_patch if item.isdecimal())
+    soup = get_soup(book_url)
+    book_details = parse_book_details(soup, book_url)
+    cover_url = book_details.get('img_url')
+    book_title = book_details.get('title')
+    download_txt(book_id, book_title)
+    download_image(cover_url, book_id)
+    return book_details
+
+
 def create_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('start_id', nargs='?', default=1, type=int)
@@ -81,16 +94,13 @@ def main():
     log = logging.getLogger('ex')
     parser = create_parser()
     namespace = parser.parse_args()
+    books = []
     for book_id in tqdm(range(namespace.start_id, namespace.end_id + 1)):
-        base_url = f'https://tululu.org/b{book_id}/'
+        book_url = f'https://tululu.org/b{book_id}/'
         while True:
             try:
-                soup = get_soup(base_url)
-                book_details = parse_book_details(soup, base_url)
-                cover_url = book_details.get('img_url')
-                book_title = book_details.get('title')
-                download_txt(book_id, book_title)
-                download_image(cover_url, book_id)
+                book = get_book(book_url)
+                books.append(book)
             except requests.HTTPError:
                 log.exception(
                     f"An HTTP error occurred. "
@@ -101,6 +111,8 @@ def main():
                 time.sleep(30)
                 continue
             break
+    with open('books.json', 'a') as file:
+        json.dump(books, file, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
