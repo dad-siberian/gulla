@@ -14,16 +14,16 @@ logger = logging.getLogger('Logger')
 
 def parse_book_urls(soup):
     base_url = 'https://tululu.org/'
-    book_urls = []
-    books = soup.find_all('div', class_='bookimage')
-    for book in books:
-        book_url = book.find('a').get('href')
-        book_urls.append(urljoin(base_url, book_url))
+    book_urls = list()
+    book_hyperlinks = soup.select('div.bookimage a')
+    for link in book_hyperlinks:
+        book_href = link.get('href')
+        book_urls.append(urljoin(base_url, book_href))
     return book_urls
 
 
 def main():
-    books = []
+    books = list()
     for page_number in tqdm(range(1, 5)):
         fiction_url = f'https://tululu.org/l55/{page_number}/'
         while True:

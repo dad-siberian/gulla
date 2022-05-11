@@ -11,6 +11,9 @@ from pathvalidate import sanitize_filename
 from tqdm import tqdm
 
 
+log = logging.getLogger('ex')
+
+
 def download_txt(book_id, filename, folder='books'):
     os.makedirs(folder, exist_ok=True)
     filepath = os.path.join(folder, f'{book_id}. {filename}')
@@ -51,16 +54,16 @@ def get_soup(url):
 
 
 def parse_book_details(soup, base_url):
-    title_tag = soup.find('body').find('h1').text.split('::')
+    title_tag = soup.select_one('body h1').text.split('::')
     title, author = title_tag
-    genres = soup.find('span', class_='d_book').find_all('a')
-    img_url = soup.find('div', class_='bookimage').find('img').get('src')
-    comments = soup.find_all('div', class_='texts')
+    genres = soup.select('span.d_book a')
+    img_url = soup.select_one('.bookimage img').get('src')
+    comments = soup.select('.texts .black')
     book_details = {
         'title': sanitize_filename(title.strip()),
         'author': sanitize_filename(author.strip()),
         'genre': [genre.text for genre in genres],
-        'comments': [comment.find('span').text for comment in comments],
+        'comments': [comment.text for comment in comments],
         'img_url': urljoin(base_url, img_url),
     }
     return book_details
@@ -91,7 +94,6 @@ def main():
         level=logging.INFO,
         format='%(asctime)s %(levelname)s %(message)s'
     )
-    log = logging.getLogger('ex')
     parser = create_parser()
     namespace = parser.parse_args()
     books = []
