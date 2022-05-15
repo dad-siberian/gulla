@@ -41,12 +41,12 @@ def create_books_json(books, namespace):
 
 def create_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--start_page', nargs='?', type=int, required=True)
-    parser.add_argument('--end_page', nargs='?', default=701, type=int)
-    parser.add_argument('--dest_folder', nargs='?', type=Path)
+    parser.add_argument('-start_page', nargs='?', type=int)
+    parser.add_argument('--end_page', default=701, type=int)
+    parser.add_argument('--dest_folder', type=Path)
     parser.add_argument('--skip_imgs', action='store_const', const=True)
     parser.add_argument('--skip_txt', action='store_const', const=True)
-    parser.add_argument('--json_path', nargs='?', type=Path)
+    parser.add_argument('--json_path', type=Path)
     return parser
 
 
@@ -60,7 +60,6 @@ def main():
     parser = create_parser()
     namespace = parser.parse_args()
     books = list()
-    print(namespace.json_path)
     for page_number in tqdm(range(namespace.start_page, namespace.end_page)):
         fiction_url = f'https://tululu.org/l55/{page_number}/'
         soup = get_soup(fiction_url)
