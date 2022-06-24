@@ -13,7 +13,7 @@
 
   <div class="container">
     <div class="row row-cols-2 justify-content-around">
-      {% for book in books %}
+      {% for book, book_path in books %}
       <div class="card text-white bg-warning mb-3" style="max-width: 540px;">
         <div class="row no-gutters">
           <div class="col-md-4">
@@ -23,7 +23,12 @@
             <div class="card-body">
               <h5 class="card-title">{{ book.title }}</h5>
               <p class="card-text">{{ book.author }}</p>
-              <p class="card-text"><small class="text-muted">{{ book.author }}</small></p>
+              <p class="card-text"><small class="text-muted"></small></p>
+              <p class="card-text">
+                <small class="text-muted">
+                  <a href="{{ book_path }}" target="_blank" rel="noopener noreferrer">Читать</a>
+                </small>
+              </p>
             </div>
           </div>
         </div>
