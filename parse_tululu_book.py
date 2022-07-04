@@ -9,7 +9,7 @@ import requests
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from tqdm import tqdm
-
+from transliterate import slugify
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -18,7 +18,7 @@ logger.setLevel(logging.INFO)
 def download_txt(book_id, filename, folder='.'):
     folder_path = os.path.join(folder, 'books')
     os.makedirs(folder_path, exist_ok=True)
-    filepath = os.path.join(folder_path, f'{book_id}. {filename}')
+    filepath = os.path.join(folder_path, slugify(filename))
     url = f'https://tululu.org/txt.php'
     params = {'id': book_id}
     response = requests.get(url, params=params)
@@ -33,14 +33,10 @@ def check_for_redirect(response):
         raise requests.HTTPError
 
 
-def download_image(url, book_id, folder):
+def download_image(url, folder):
     folder_path = os.path.join(folder, 'images')
     os.makedirs(folder_path, exist_ok=True)
-    basename = os.path.basename(url)
-    if basename == 'nopic.gif':
-        filename = basename
-    else:
-        filename = f'{book_id}_{basename}'
+    filename = os.path.basename(url)
     filepath = os.path.join(folder_path, filename)
     response = requests.get(url)
     response.raise_for_status()
@@ -62,12 +58,15 @@ def parse_book_details(soup, base_url):
     genres = soup.select('span.d_book a')
     img_url = soup.select_one('.bookimage img').get('src')
     comments = soup.select('.texts .black')
+    file = f'{slugify(sanitize_filename(title.strip()))}.txt'
     book_details = {
         'title': sanitize_filename(title.strip()),
         'author': sanitize_filename(author.strip()),
         'genre': [genre.text for genre in genres],
         'comments': [comment.text for comment in comments],
         'img_url': urljoin(base_url, img_url),
+        'img': os.path.join('..', 'images', os.path.basename(img_url)),
+        'file': os.path.join('..', 'books', file)
     }
     return book_details
 
@@ -84,7 +83,7 @@ def get_book(book_url, folder, skip_imgs=False, skip_txt=False):
     if not skip_imgs:
         download_txt(book_id, book_title, folder)
     if not skip_txt:
-        download_image(cover_url, book_id, folder)
+        download_image(cover_url, folder)
     return book_details
 
 
@@ -120,7 +119,7 @@ def main():
                 time.sleep(30)
                 continue
             break
-    with open('books.json', 'a') as file:
+    with open('books.json', 'w') as file:
         json.dump(books, file, ensure_ascii=False, indent=4)
 
 
