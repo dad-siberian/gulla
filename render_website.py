@@ -4,6 +4,7 @@ import os
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from livereload import Server
+from more_itertools import chunked
 
 from log_config import LOGGING_CONFIG
 
@@ -14,20 +15,19 @@ def render_website():
     with open('books.json', 'r', encoding='utf-8') as file:
         books = json.load(file)
 
-    book_files = os.listdir('books')
-    book_paths = list(map(lambda name: os.path.join('books', name), book_files))
-    book_paths.sort()
+    folder_path = os.path.join('.', 'pages')
+    os.makedirs(folder_path, exist_ok=True)
 
     env = Environment(
         loader=FileSystemLoader('.'),
         autoescape=select_autoescape(['html', 'xml'])
     )
-    template = env.get_template('template.html')
-    rendered_page = template.render(
-        books=zip(books, book_paths)
-    )
-    with open('index.html', 'w', encoding="utf8") as file:
-        file.write(rendered_page)
+    for page_number, some_books in enumerate(chunked(books, 10)):
+        template = env.get_template('template.html')
+        rendered_page = template.render(books=some_books)
+        filepath = os.path.join(folder_path, f'index{page_number}.html')
+        with open(filepath, 'w', encoding="utf8") as file:
+            file.write(rendered_page)
 
 
 def main():

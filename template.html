@@ -13,11 +13,11 @@
 
   <div class="container">
     <div class="row row-cols-2 justify-content-around">
-      {% for book, book_path in books %}
+      {% for book in books %}
       <div class="card text-white bg-warning mb-3" style="max-width: 540px;">
         <div class="row no-gutters">
           <div class="col-md-4">
-            <img src="{{ book.img_url }}" class="card-img" alt="{{ book.title }}">
+            <img src="{{ book.img|urlencode }}" class="card-img" alt="Обложка книги {{ book.title }}">
           </div>
           <div class="col-md-8">
             <div class="card-body">
@@ -26,7 +26,7 @@
               <p class="card-text"><small class="text-muted"></small></p>
               <p class="card-text">
                 <small class="text-muted">
-                  <a href="{{ book_path }}" target="_blank" rel="noopener noreferrer">Читать</a>
+                  <a href="{{ book.file|urlencode }}" target="_blank" rel="noopener noreferrer">Читать</a>
                 </small>
               </p>
             </div>
@@ -36,6 +36,7 @@
       {% endfor %}
     </div>
   </div>
+
 
 
 
