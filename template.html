@@ -10,11 +10,37 @@
 </head>
 
 <body>
-
+  <div class="m-3">
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+      {% if page_number == 1 %}
+        <li class="page-item disabled"><span class="page-link">Назад</span></li>
+      {% else %}
+        <li class="page-item"><a class="page-link" href="index{{ page_number - 1 }}.html">Назад</a></li>
+      {% endif %}
+      {% for paginal_reference in range(1, page_quantity + 1) %}
+        {% if paginal_reference == page_number %}
+          <li class="page-item active" aria-current="page">
+            <span class="page-link">
+              {{ paginal_reference }}<span class="sr-only">(current)</span>
+            </span>
+          </li>
+        {% else %}
+          <li class="page-item"><a class="page-link" href="index{{ paginal_reference }}.html">{{ paginal_reference }}</a></li>
+        {% endif %}
+      {% endfor %}
+      {% if page_number == page_quantity %}
+        <li class="page-item disabled"><span class="page-link">Вперед</span></li>
+      {% else %}
+        <li class="page-item"><a class="page-link" href="index{{ page_number + 1 }}.html">Вперед</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+  </div>
   <div class="container">
     <div class="row row-cols-2 justify-content-around">
       {% for book in books %}
-      <div class="card text-white bg-warning mb-3" style="max-width: 540px;">
+      <div class="card text-dark bg-light mb-3" style="max-width: 540px;">
         <div class="row no-gutters">
           <div class="col-md-4">
             <img src="{{ book.img|urlencode }}" class="card-img" alt="Обложка книги {{ book.title }}">
@@ -23,7 +49,6 @@
             <div class="card-body">
               <h5 class="card-title">{{ book.title }}</h5>
               <p class="card-text">{{ book.author }}</p>
-              <p class="card-text"><small class="text-muted"></small></p>
               <p class="card-text">
                 <small class="text-muted">
                   <a href="{{ book.file|urlencode }}" target="_blank" rel="noopener noreferrer">Читать</a>
@@ -36,9 +61,6 @@
       {% endfor %}
     </div>
   </div>
-
-
-
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
     integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
