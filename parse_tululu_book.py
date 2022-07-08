@@ -9,7 +9,6 @@ import requests
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from tqdm import tqdm
-from transliterate import slugify
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -18,7 +17,7 @@ logger.setLevel(logging.INFO)
 def download_txt(book_id, filename, folder='.'):
     folder_path = os.path.join(folder, 'books')
     os.makedirs(folder_path, exist_ok=True)
-    filepath = os.path.join(folder_path, slugify(filename))
+    filepath = os.path.join(folder_path, filename)
     url = f'https://tululu.org/txt.php'
     params = {'id': book_id}
     response = requests.get(url, params=params)
@@ -58,7 +57,7 @@ def parse_book_details(soup, base_url):
     genres = soup.select('span.d_book a')
     img_url = soup.select_one('.bookimage img').get('src')
     comments = soup.select('.texts .black')
-    file = f'{slugify(sanitize_filename(title.strip()))}.txt'
+    file = f'{sanitize_filename(title.strip())}.txt'
     book_details = {
         'title': sanitize_filename(title.strip()),
         'author': sanitize_filename(author.strip()),
