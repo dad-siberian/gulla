@@ -15,7 +15,7 @@ logger = logging.getLogger(__file__)
 def render_website():
     with open('books.json', 'r', encoding='utf-8') as file:
         books = json.load(file)
-    books_on_page = 10
+    books_on_page = 20
     page_quantity = ceil(len(books) / books_on_page)
     folder_path = os.path.join('.', 'pages')
     os.makedirs(folder_path, exist_ok=True)
@@ -42,7 +42,7 @@ def main():
     render_website()
     server = Server()
     server.watch('template.html', render_website)
-    server.serve(root='pages', default_filename='index1.html')
+    server.serve(root='./pages', default_filename='index1.html')
 
 
 if __name__ == '__main__':
